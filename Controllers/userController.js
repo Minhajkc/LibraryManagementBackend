@@ -2,7 +2,7 @@ const User = require("../Models/User");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
-// Register a new user
+
 exports.registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -21,10 +21,11 @@ exports.registerUser = async (req, res) => {
   }
 };
 
-// Login user
+
 exports.loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log(req.body)
 
     const user = await User.findOne({ email });
     if (!user) {
@@ -37,6 +38,12 @@ exports.loginUser = async (req, res) => {
     }
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
+    res.cookie("token", token, {
+        httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+        secure: process.env.NODE_ENV === "production", // Ensures cookies are sent over HTTPS in production
+        sameSite: "strict", // Protects against CSRF
+        maxAge: 24 * 60 * 60 * 1000, // Token expires in 1 day
+      });
 
     res.status(200).json({ message: "Login successful", token });
   } catch (error) {
@@ -44,7 +51,7 @@ exports.loginUser = async (req, res) => {
   }
 };
 
-// Get user profile
+
 exports.getUserProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password");

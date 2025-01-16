@@ -1,7 +1,7 @@
 const Book = require("../Models/Book");
 const User = require("../Models/User");
 
-// Borrow a book
+
 exports.borrowBook = async (req, res) => {
   try {
     const { bookId } = req.params;

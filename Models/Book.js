@@ -6,6 +6,7 @@ const bookSchema = new mongoose.Schema({
   isbn: { type: String, required: true, unique: true },
   publishedYear: { type: Number },
   availableCopies: { type: Number, default: 1 },
+  isAvailable: { type: Boolean, default: true }  
 });
 
 module.exports = mongoose.model("Book", bookSchema);

@@ -6,6 +6,10 @@ const bodyParser = require("body-parser");
 const bookRoutes = require("./Routes/BookRoutes");
 const userRoutes = require("./Routes/UserRoutes");
 const borrowRoutes = require("./Routes/BorrowRoutes");
+const AdminRoutes = require("./Routes/AdminRoutes")
+const cors = require("cors");
+
+
 
 
 dotenv.config();
@@ -14,9 +18,17 @@ dotenv.config();
 const app = express();
 
 
+
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+app.use(cors({
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST", "PUT", "DELETE","PATCH"],
+    credentials: true, 
+  }));
+
 
 
 const connectDB = async () => {
@@ -37,6 +49,7 @@ connectDB();
 app.use("/api/books", bookRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/borrow", borrowRoutes);
+app.use("/api/Admin",AdminRoutes)
 
 
 app.use((err, req, res, next) => {

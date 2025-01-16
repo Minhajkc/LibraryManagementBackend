@@ -2,6 +2,7 @@ const Book = require("../Models/Book");
 
 
 exports.createBook = async (req, res) => {
+
   try {
     const { title, author, isbn, publishedYear, availableCopies } = req.body;
 
@@ -16,20 +17,21 @@ exports.createBook = async (req, res) => {
 
 
 exports.getBooks = async (req, res) => {
-  try {
-    const { page = 1 } = req.query;
-    const limit = 10;
-    const books = await Book.find()
-      .skip((page - 1) * limit)
-      .limit(limit);
-
-    const totalBooks = await Book.countDocuments();
-
-    res.status(200).json({ books, totalBooks, currentPage: page });
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching books", error: error.message });
-  }
-};
+    try {
+      const { page = 1 } = req.query;
+      const limit = 10;
+      const books = await Book.find()
+        .skip((page - 1) * limit)
+        .limit(limit);
+  
+      const totalBooks = await Book.countDocuments();
+  
+      res.status(200).json({ books, totalBooks, currentPage: page });
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching books", error: error.message });
+    }
+  };
+  
 
 
 exports.searchBooks = async (req, res) => {
@@ -50,22 +52,59 @@ exports.searchBooks = async (req, res) => {
 
 
 exports.updateBook = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const updatedData = req.body;
-
-    const updatedBook = await Book.findByIdAndUpdate(id, updatedData, { new: true });
-
-    if (!updatedBook) {
-      return res.status(404).json({ message: "Book not found" });
+    const { bookId } = req.params;
+    const { title, author, isbn, publishedYear, availableCopies } = req.body;
+  
+    try {
+      // Find the book by ID
+      const book = await Book.findById(bookId);
+  
+      if (!book) {
+        return res.status(404).json({ message: "Book not found" });
+      }
+  
+      // Update book details
+      book.title = title || book.title;
+      book.author = author || book.author;
+      book.isbn = isbn || book.isbn;
+      book.publishedYear = publishedYear || book.publishedYear;
+      book.availableCopies = availableCopies || book.availableCopies;
+  
+      // Save updated book
+      await book.save();
+  
+      res.status(200).json({ message: "Book updated successfully", book });
+    } catch (error) {
+      console.error("Error updating book:", error);
+      res.status(500).json({ message: "Error updating book", error: error.message });
     }
-
-    res.status(200).json({ message: "Book updated successfully", updatedBook });
-  } catch (error) {
-    res.status(500).json({ message: "Error updating book", error: error.message });
-  }
 };
 
+exports.updateBookAvailability = async (req, res) => {
+    const { bookId } = req.params;
+    const { isAvailable } = req.body;
+  
+    try {
+      // Find the book by ID
+      const book = await Book.findById(bookId);
+  
+      if (!book) {
+        return res.status(404).json({ message: "Book not found" });
+      }
+  
+      // Update the availability status
+      book.isAvailable = isAvailable;
+  
+      // Save the updated book
+      await book.save();
+  
+      // Respond with the updated book
+      res.status(200).json({ message: "Book availability updated", book });
+    } catch (error) {
+      console.error("Error updating book availability:", error);
+      res.status(500).json({ message: "Error updating book availability", error: error.message });
+    }
+  };
 
 exports.deleteBook = async (req, res) => {
   try {
