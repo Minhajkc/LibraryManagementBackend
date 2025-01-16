@@ -37,7 +37,7 @@ exports.loginUser = async (req, res) => {
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
+    const token = jwt.sign({ id: user._id, role:'user' }, process.env.JWT_SECRET, { expiresIn: "1d" });
     res.cookie("token", token, {
         httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
         secure: process.env.NODE_ENV === "production", // Ensures cookies are sent over HTTPS in production
@@ -54,14 +54,18 @@ exports.loginUser = async (req, res) => {
 
 exports.getUserProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select("-password");
+    const user = await User.findById(req.user.id).select("-password").populate("borrowingHistory.bookId", "title") 
+    .exec();
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+    if (!user) return res.status(404).json({ message: "User not found" });
 
-    res.status(200).json(user);
+    res.json({
+      name: user.name,
+      email: user.email,
+      borrowingHistory: user.borrowingHistory,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Error fetching profile", error: error.message });
+    console.error("Error fetching user profile:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };

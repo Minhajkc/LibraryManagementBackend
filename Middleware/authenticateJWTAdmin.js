@@ -2,8 +2,6 @@ const jwt = require("jsonwebtoken");
 
 const authenticateJWTAdmin = (req, res, next) => {
   const token = req.cookies.token; // Retrieve token from cookies
-  console.log(token)
-
   if (!token) {
     return res.status(401).json({ message: "Unauthorized: No token provided" });
   }
